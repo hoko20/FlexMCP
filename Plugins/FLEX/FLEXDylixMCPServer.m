@@ -7,6 +7,7 @@
 #import <ifaddrs.h>
 #import <net/if.h>
 #import <arpa/inet.h>
+#import <stdlib.h>
 
 static NSString *const DXMCPServiceKey=@"FLEXDylixMCP.enabled";
 static NSString *const DXMCPPortKey=@"FLEXDylixMCP.port";
@@ -95,7 +96,7 @@ static BOOL Same(NSString *left,NSString *right){
  return diff==0;
 }
 static NSString *RandomToken(void){
- unsigned char bytes[32];SecRandomCopyBytes(kSecRandomDefault,sizeof(bytes),bytes);
+ unsigned char bytes[32];if(SecRandomCopyBytes(kSecRandomDefault,sizeof(bytes),bytes)!=errSecSuccess)arc4random_buf(bytes,sizeof(bytes));
  NSMutableString *token=[NSMutableString stringWithCapacity:64];
  for(NSUInteger i=0;i<sizeof(bytes);i++)[token appendFormat:@"%02x",bytes[i]];
  return token;
