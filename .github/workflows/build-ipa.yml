@@ -67,10 +67,13 @@ jobs:
       - name: Build unsigned IPA
         env:
           DYLIX_SDK_26_0: ${{ github.workspace }}/LocalSDKs/iPhoneOS26.0.sdk
-        run: python3 scripts/build.py --sdk-root LocalSDKs/iPhoneOS26.0.sdk
+        run: python3 scripts/build.py
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: Dylix-IPA
-          path: build/*.ipa
+          path: |
+            build/*.ipa
+            Resources/FLEXPlugin/*.dylib
+            Resources/FLEXPlugin/*.deb
           if-no-files-found: error
