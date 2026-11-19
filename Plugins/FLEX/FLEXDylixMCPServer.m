@@ -66,8 +66,10 @@ static BOOL WindowOperation(NSString *operation){
  dispatch_once(&once,^{operations=[NSSet setWithArray:@[@"chat_status",@"minimize_chat",@"restore_chat",@"open_tool",@"navigate_back",@"dismiss_tool"]];});
  return [operations containsObject:operation];
 }
-static NSArray<NSDictionary *> *Tools(void){
- static NSArray *tools;static dispatch_once_t once;
+static NSString *Instructions(void){
+ return @"你通过 FLEX++ 直连当前注入的 App。先调用 dylix_flex_read(operation=capabilities)、current 和 report，核对 bundleID、当前页面、选中对象与可用操作；连接配置存在不代表目标在线。选中对象为空不妨碍用 screen_elements / view_tree 自主观察，不要只凭最后点选的控件猜界面。\n需要操作目标页面时，若 FLEX 或聊天覆盖层可见，先调用 dylix_flex_control(operation=minimize_chat, surface=target)，再读 screen_elements 和截图；状态悬浮球不是业务控件。截图用 dylix_flex_sensitive(operation=capture_screen)；返回截图不代表模型一定收到图像。\n只使用真实返回的 id/frame/窗口坐标，导航后重新读取，不连续重试过期 id。activate_control 的支持范围以返回为准，不支持时可在 gesture_capabilities 确认后端可用并获授权后使用 gesture。delivered、dispatched、scrolled 不是业务成功证明，操作后核对 controllerPath、控件文字/位置、contentOffset 和新截图；滚动 delta=0 要报告未滚动。切页前记录恢复路径，结束后 restore_chat。\n稳定 Hook 证据：object_info + view_tree + class_info；头文件用 dylix_flex_sensitive(operation=class_header) 的 name/start_line/line_count 分页。区分当前对象、交互父容器、业务祖先、最近 responder controller 和声明所属镜像；hookEvidence 的声明候选、executionObserved、stabilityVerified 分开解释，未观测执行不能称为已验证生命周期。\nset_view / undo 仅作临时现场验证，需授权并复查；持久修改要写进工程并构建，不能用临时隐藏冒充插件功能。\n日志：先 sandbox_list 取真实相对路径和大小，再 dylix_flex_sensitive(operation=sandbox_read, path=...)，默认 128 KiB、limit 最高 524288；优先 tail=true 读末尾，tail 不与 offset 同传；续读用 next_offset，检查 has_more、totalBytes、modifiedAt。网络详情、defaults、文件和钥匙串元数据只在授权范围内读取，不复述秘密。报告工具失败、空结果、未测项和真实截图状态，不凭配置声称功能正常。";
+}
+static NSArray<NSDictionary *> *Tools(void){ static NSArray *tools;static dispatch_once_t once;
  dispatch_once(&once,^{
   NSDictionary *read=@{@"operation":EnumField(ReadOperations()),@"id":StringField(),@"query":StringField(),@"name":StringField(),@"path":StringField(),@"offset":IntegerField(),@"x":NumberField(),@"y":NumberField()};
   NSDictionary *sensitive=@{@"operation":EnumField(SensitiveOperations()),@"surface":EnumField(@[@"target",@"flex"]),@"name":StringField(),@"start_line":IntegerField(),@"line_count":IntegerField(),@"id":StringField(),@"path":StringField(),@"key":StringField(),@"offset":IntegerField(),@"limit":IntegerField(),@"tail":BooleanField()};
@@ -303,7 +305,7 @@ static NSString *LocalIPv4(void){
   NSString *requested=params[@"protocolVersion"];
   NSString *version=[requested isKindOfClass:NSString.class]&&[@[@"2025-06-18",@"2025-03-26",@"2024-11-05"] containsObject:requested]?requested:DXMCPVersion;
   NSString *appVersion=[NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"] isKindOfClass:NSString.class]?NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]:@"dev";
-  NSDictionary *response=HTTPJSON(200,RPC(identifier,@{@"protocolVersion":version,@"capabilities":@{@"tools":@{@"listChanged":@NO}},@"serverInfo":@{@"name":@"Dylix FLEX",@"version":appVersion}}),@{@"Mcp-Session-Id":NSUUID.UUID.UUIDString});
+  NSDictionary *response=HTTPJSON(200,RPC(identifier,@{@"protocolVersion":version,@"capabilities":@{@"tools":@{@"listChanged":@NO}},@"serverInfo":@{@"name":@"Dylix FLEX",@"version":appVersion},@"instructions":Instructions()}),@{@"Mcp-Session-Id":NSUUID.UUID.UUIDString});
   [self sendResponse:response connection:connection];return;
  }
  if([method isEqual:@"ping"]){[self sendResponse:HTTPJSON(200,RPC(identifier,@{}),nil) connection:connection];return;}
