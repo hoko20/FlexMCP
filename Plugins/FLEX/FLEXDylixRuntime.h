@@ -3,6 +3,7 @@
 // All operations run on the main thread. IDs refer only to weakly held views
 // discovered in the current view tree or explicitly selected in FLEX.
 @interface FLEXDylixRuntime : NSObject
++ (instancetype)sharedRuntime;
 @property (nonatomic, weak) id selectedObject;
 - (NSDictionary *)execute:(NSString *)operation arguments:(NSDictionary *)arguments error:(NSString **)error;
 - (NSArray<NSDictionary *> *)toolCatalog;
