@@ -78,7 +78,7 @@ static NSString *DXChatContent(id content) {
  [self refreshAgentStatus];
 }
 - (instancetype)initWithReport:(NSString *)report className:(NSString *)className {
- if ((self=[super init])) { DXCurrentChat=self; _report=[report copy]?:@""; _className=[className copy]?:@"未知对象"; _messages=[NSMutableArray new]; _drafts=[NSMutableDictionary new];_activeToolOperations=[NSMutableDictionary new]; [self restoreConnection];[NSNotificationCenter.defaultCenter addObserver:self selector:@selector(applicationStateChanged:) name:UIApplicationDidBecomeActiveNotification object:nil];[NSNotificationCenter.defaultCenter addObserver:self selector:@selector(applicationStateChanged:) name:UIApplicationWillResignActiveNotification object:nil]; }
+ if ((self=[super init])) { DXCurrentChat=self; _report=[report copy]?:@""; _className=[className copy]?:@"未知对象"; [FLEXDylixRuntime sharedRuntime].contextReport=_report;[FLEXDylixRuntime sharedRuntime].contextClassName=_className; _messages=[NSMutableArray new]; _drafts=[NSMutableDictionary new];_activeToolOperations=[NSMutableDictionary new]; [self restoreConnection];[NSNotificationCenter.defaultCenter addObserver:self selector:@selector(applicationStateChanged:) name:UIApplicationDidBecomeActiveNotification object:nil];[NSNotificationCenter.defaultCenter addObserver:self selector:@selector(applicationStateChanged:) name:UIApplicationWillResignActiveNotification object:nil]; }
  return self;
 }
 - (void)restoreConnection {
@@ -135,6 +135,9 @@ static NSString *DXChatContent(id content) {
 - (void)updateReport:(NSString *)report className:(NSString *)className selectedObject:(id)object {
  self.report=[report copy]?:@"";self.className=[className copy]?:@"未知对象";self.selectedObject=object;
  self.runtime.selectedObject=object;
+ [FLEXDylixRuntime sharedRuntime].selectedObject=object;
+ [FLEXDylixRuntime sharedRuntime].contextReport=self.report;
+ [FLEXDylixRuntime sharedRuntime].contextClassName=self.className;
  self.contextLabel.text=[@"FLEX 现场  ·  " stringByAppendingString:self.className];
 }
 - (UIButton *)button:(NSString *)title action:(SEL)action {
