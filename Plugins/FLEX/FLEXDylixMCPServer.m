@@ -336,7 +336,7 @@ static NSString *LocalIPv4(void){
  if(!enabled){completion(ToolError(@"工具不存在或已在 FLEX 设置中关闭"));return;}
  if([name isEqual:@"dylix_flex_status"]){
   NSString *bundle=NSBundle.mainBundle.bundleIdentifier?:@"";
-  NSDictionary *status=@{@"bundleID":bundle,@"endpoint":[FLEXDylixMCPServer endpoint],@"state":[FLEXDylixMCPServer status],@"groups":@{@"read":@YES,@"sensitive":@([FLEXDylixMCPServer sensitiveEnabled]),@"control":@([FLEXDylixMCPServer controlEnabled])},@"server":@"FLEX++ in-app"};
+  NSDictionary *status=@{@"bundleID":bundle,@"endpoint":[FLEXDylixMCPServer endpoint],@"state":[FLEXDylixMCPServer status],@"groups":@{@"read":@YES,@"sensitive":@([FLEXDylixMCPServer sensitiveEnabled]),@"control":@([FLEXDylixMCPServer controlEnabled])},@"server":@"FLEX++ in-app",@"build":@"2026-11-19-report",@"selectedObject":([FLEXDylixRuntime sharedRuntime].selectedObject?NSStringFromClass([[FLEXDylixRuntime sharedRuntime].selectedObject class]):@"未选中")};
   completion(TextContent(status,NO));return;
  }
  NSDictionary *properties=tool[@"schema"][@"properties"];
