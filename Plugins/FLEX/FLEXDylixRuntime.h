@@ -5,6 +5,8 @@
 @interface FLEXDylixRuntime : NSObject
 + (instancetype)sharedRuntime;
 @property (nonatomic, weak) id selectedObject;
+@property (nonatomic, copy) NSString *contextReport;
+@property (nonatomic, copy) NSString *contextClassName;
 - (NSDictionary *)execute:(NSString *)operation arguments:(NSDictionary *)arguments error:(NSString **)error;
 - (NSArray<NSDictionary *> *)toolCatalog;
 - (UIViewController *)controllerForTool:(NSString *)identifier error:(NSString **)error;
