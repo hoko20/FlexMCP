@@ -170,7 +170,7 @@ static NSString *DXChatContent(id content) {
 }
 - (void)viewDidLoad {
  [super viewDidLoad]; self.title=@"Dylix AI"; self.view.backgroundColor=UIColor.systemGroupedBackgroundColor;
- self.runtime=[FLEXDylixRuntime new];self.runtime.selectedObject=self.selectedObject;self.agentReplies=[NSMutableDictionary new];self.commandGenerations=[NSMutableDictionary new];
+ self.runtime=[FLEXDylixRuntime sharedRuntime];self.runtime.selectedObject=self.selectedObject;self.agentReplies=[NSMutableDictionary new];self.commandGenerations=[NSMutableDictionary new];
  self.navigationItem.rightBarButtonItem=[[UIBarButtonItem alloc]initWithTitle:@"新会话" style:UIBarButtonItemStylePlain target:self action:@selector(newSession)];
  if (self.navigationController.viewControllers.firstObject == self) {
   self.navigationItem.leftBarButtonItem=[[UIBarButtonItem alloc]initWithImage:[UIImage systemImageNamed:@"minus"] style:UIBarButtonItemStylePlain target:self action:@selector(closeTapped)];
