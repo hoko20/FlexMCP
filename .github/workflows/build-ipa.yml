@@ -30,7 +30,7 @@ jobs:
       - name: Bundle Alpine tool kits
         run: |
           python3 scripts/fetch_ish_packages.py
-          python3 scripts/fetch_reverse_tools.py
+          python3 scripts/fetch_reverse_tools.py || python3 scripts/fetch_reverse_tools.py --refresh
       - name: Build FLEX++ with in-app MCP
         run: |
           cd Plugins/FLEX
