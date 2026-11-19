@@ -413,6 +413,16 @@ static NSDictionary *DXBody(NSData *body) {
   UIView *view=[window hitTest:CGPointMake([x doubleValue],[y doubleValue]) withEvent:nil];
   return @{@"hitView":[self objectInfo:view],@"interactiveAncestor":view?[self interactiveAncestorForView:view]:@{@"available":@NO},@"windowBounds":NSStringFromCGRect(window.bounds)};
  }
+ if ([operation isEqual:@"report"]) {
+  NSString *base=[self.contextReport copy]?:@"";
+  NSDictionary *live=[self execute:@"current" arguments:@{} error:nil]?:@{};
+  NSData *data=[NSJSONSerialization dataWithJSONObject:live options:0 error:nil];
+  NSString *liveText=data?[[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding]:@"";
+  NSString *text=[NSString stringWithFormat:@"%@\nCurrent FLEX runtime: %@",base,liveText?:@""];
+  if(text.length>16000)text=[text substringToIndex:16000];
+  NSString *name=self.contextClassName.length?self.contextClassName:(live[@"selectedObject"][@"class"]?:@"未知对象");
+  return @{@"bundleID":NSBundle.mainBundle.bundleIdentifier?:@"unknown",@"className":name,@"report":text};
+ }
  if ([operation isEqual:@"current"]) {
   UIWindow *window=[self window];NSMutableArray *path=[NSMutableArray new],*texts=[NSMutableArray new];NSUInteger scanned=0;
   UIViewController *controller=[self visibleControllerInWindow:window path:path];[self collectScreenTexts:window window:window items:texts scanned:&scanned];
