@@ -24,7 +24,7 @@ jobs:
           git clone --depth 1 https://github.com/theos/theos.git "$RUNNER_TEMP/theos"
           git clone --depth 1 https://github.com/theos/dm.pl.git "$RUNNER_TEMP/theos/vendor/dm.pl"
           chmod +x "$RUNNER_TEMP/theos/vendor/dm.pl/dm.pl"
-          "$RUNNER_TEMP/theos/bin/update-theos"
+          THEOS="$RUNNER_TEMP/theos" "$RUNNER_TEMP/theos/bin/update-theos"
           mkdir -p "$RUNNER_TEMP/theos/sdks"
           ln -sfn "$GITHUB_WORKSPACE/LocalSDKs/iPhoneOS26.0.sdk" "$RUNNER_TEMP/theos/sdks/iPhoneOS26.0.sdk"
           echo "THEOS=$RUNNER_TEMP/theos" >> "$GITHUB_ENV"
