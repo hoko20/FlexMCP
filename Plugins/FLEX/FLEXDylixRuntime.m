@@ -418,9 +418,13 @@ static NSDictionary *DXBody(NSData *body) {
   NSDictionary *live=[self execute:@"current" arguments:@{} error:nil]?:@{};
   NSData *data=[NSJSONSerialization dataWithJSONObject:live options:0 error:nil];
   NSString *liveText=data?[[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding]:@"";
+  NSString *name=self.contextClassName.length?self.contextClassName:(live[@"selectedObject"][@"class"]?:@"未知对象");
+  if(!base.length){
+   base=[NSString stringWithFormat:@"App: %@\nCurrent FLEX selection: %@\nUse this runtime evidence to locate the UI owner and implement the requested behavior in the Dylix plugin project. A temporary FLEX view change is not a plugin implementation.",
+    NSBundle.mainBundle.bundleIdentifier?:@"unknown",name?:@"当前宿主"];
+  }
   NSString *text=[NSString stringWithFormat:@"%@\nCurrent FLEX runtime: %@",base,liveText?:@""];
   if(text.length>16000)text=[text substringToIndex:16000];
-  NSString *name=self.contextClassName.length?self.contextClassName:(live[@"selectedObject"][@"class"]?:@"未知对象");
   return @{@"bundleID":NSBundle.mainBundle.bundleIdentifier?:@"unknown",@"className":name,@"report":text};
  }
  if ([operation isEqual:@"current"]) {
