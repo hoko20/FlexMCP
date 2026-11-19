@@ -1,0 +1,69 @@
+name: Build IPA
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency:
+  group: build-ipa-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install host dependencies
+        run: |
+          brew install cmake meson ninja llvm ldid xz
+          rustup target add aarch64-apple-ios
+          echo "DYLIX_LLD=$(brew --prefix llvm)/bin/ld.lld" >> "$GITHUB_ENV"
+          python3 --version
+          xcodebuild -version
+      - name: Install Theos
+        run: |
+          git clone --depth 1 https://github.com/theos/theos.git "$RUNNER_TEMP/theos"
+          mkdir -p "$RUNNER_TEMP/theos/sdks"
+          ln -sfn "$GITHUB_WORKSPACE/LocalSDKs/iPhoneOS26.0.sdk" "$RUNNER_TEMP/theos/sdks/iPhoneOS26.0.sdk"
+          echo "THEOS=$RUNNER_TEMP/theos" >> "$GITHUB_ENV"
+      - name: Fetch pinned toolchain
+        run: python3 scripts/fetch_toolchain.py
+      - name: Bundle Alpine tool kits
+        run: |
+          python3 scripts/fetch_ish_packages.py
+          python3 scripts/fetch_reverse_tools.py
+      - name: Build FLEX++ with in-app MCP
+        run: |
+          cd Plugins/FLEX
+          make clean package FINALPACKAGE=1 DEBUG=0 -j1
+      - name: Refresh bundled FLEX manifest
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, shutil
+          root = pathlib.Path('.')
+          source = root / 'Resources/FLEXPlugin'
+          dylib = next((root / 'Plugins/FLEX').glob('FLEX++-*-arm64-rootless.dylib'))
+          deb = next((root / 'Plugins/FLEX').glob('com.pxx917144686.flex_*_iphoneos-arm64.deb'))
+          for old in source.iterdir():
+              if old.suffix in ('.dylib', '.deb') and old.name not in (dylib.name, deb.name):
+                  old.unlink()
+          shutil.copy2(dylib, source / dylib.name)
+          shutil.copy2(deb, source / deb.name)
+          manifest = json.loads((source / 'manifest.json').read_text(encoding='utf-8'))
+          manifest['build'] = 264
+          manifest['files'] = {
+              'dylib': {'name': dylib.name, 'sha256': hashlib.sha256(dylib.read_bytes()).hexdigest()},
+              'deb': {'name': deb.name, 'sha256': hashlib.sha256(deb.read_bytes()).hexdigest()},
+          }
+          (source / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
+          print(dylib.name, manifest['files']['dylib']['sha256'])
+          PY
+      - name: MCP adapter tests
+        run: python3 tests/MCPRemoteServerRun.py
+      - name: Build unsigned IPA
+        run: python3 scripts/build.py --sdk-root LocalSDKs/iPhoneOS26.0.sdk
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dylix-IPA
+          path: build/*.ipa
+          if-no-files-found: error

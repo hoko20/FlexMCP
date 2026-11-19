@@ -1,0 +1,27 @@
+# Local build outputs and secrets
+/build/
+/dist/
+/output/
+/Vendor/*.xcframework
+/Vendor/REipa/target/
+/.local/
+*.ipa
+*.mobileprovision
+*.p12
+*.pfx
+*.key
+*.pem
+.env
+.env.*
+.DS_Store
+__pycache__/
+*.pyc
+# FLEX/Theos local build state (source and bundled release files are retained)
+/Plugins/FLEX/.theos/
+/Plugins/FLEX/packages/
+/Plugins/FLEX/*.deb
+/Plugins/FLEX/*.dylib
+
+# Optional tools are downloaded separately; never commit local resource archives.
+/Resources/iSH/developer-tools.tar
+/Resources/iSH/reverse-tools.tar
