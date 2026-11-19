@@ -12,6 +12,7 @@
 static NSString *const DXMCPServiceKey=@"FLEXDylixMCP.enabled";
 static NSString *const DXMCPPortKey=@"FLEXDylixMCP.port";
 static NSString *const DXMCPTokenKey=@"FLEXDylixMCP.token";
+static NSString *const DXMCPAuthKey=@"FLEXDylixMCP.requireToken";
 static NSString *const DXMCPGroupPrefix=@"FLEXDylixMCP.group.";
 static NSString *const DXMCPVersion=@"2025-06-18";
 
@@ -145,10 +146,23 @@ static NSString *LocalIPv4(void){
  return port>=1024&&port<=65535?port:8790;
 }
 + (void)setPort:(NSUInteger)port{if(port<1024||port>65535)return;[NSUserDefaults.standardUserDefaults setInteger:port forKey:DXMCPPortKey];}
++ (BOOL)authRequired{
+ id stored=[NSUserDefaults.standardUserDefaults objectForKey:DXMCPAuthKey];
+ return stored?[stored boolValue]:YES;
+}
++ (void)setAuthRequired:(BOOL)required{[NSUserDefaults.standardUserDefaults setBool:required forKey:DXMCPAuthKey];}
 + (NSString *)token{
  NSString *token=[NSUserDefaults.standardUserDefaults stringForKey:DXMCPTokenKey];
  if(!token.length){token=RandomToken();[NSUserDefaults.standardUserDefaults setObject:token forKey:DXMCPTokenKey];}
  return token;
+}
++ (BOOL)setToken:(NSString *)token{
+ NSString *value=[token stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+ if(value.length<8||value.length>64)return NO;
+ NSCharacterSet *allowed=[NSCharacterSet characterSetWithCharactersInString:@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-"];
+ if([value rangeOfCharacterFromSet:allowed.invertedSet].location!=NSNotFound)return NO;
+ [NSUserDefaults.standardUserDefaults setObject:value forKey:DXMCPTokenKey];
+ return YES;
 }
 + (NSString *)rotateToken{
  NSString *token=RandomToken();[NSUserDefaults.standardUserDefaults setObject:token forKey:DXMCPTokenKey];return token;
@@ -272,9 +286,11 @@ static NSString *LocalIPv4(void){
  if(![path isEqual:@"/mcp"]){[self respond:connection status:404 headers:@{} body:[@"Not Found" dataUsingEncoding:NSUTF8StringEncoding]];return;}
  if([method isEqual:@"DELETE"]){[self respond:connection status:204 headers:@{} body:NSData.data];return;}
  if(![method isEqual:@"POST"]){[self respond:connection status:405 headers:@{} body:[@"Method Not Allowed" dataUsingEncoding:NSUTF8StringEncoding]];return;}
- NSString *authorization=request[@"headers"][@"authorization"];
- NSString *token=[authorization.lowercaseString hasPrefix:@"bearer "]?[authorization substringFromIndex:7]:nil;
- if(!token.length||!Same(token,[FLEXDylixMCPServer token])){[self respond:connection status:401 headers:@{@"WWW-Authenticate":@"Bearer realm=\"Dylix FLEX MCP\""} body:[@"Unauthorized" dataUsingEncoding:NSUTF8StringEncoding]];return;}
+ if([FLEXDylixMCPServer authRequired]){
+  NSString *authorization=request[@"headers"][@"authorization"];
+  NSString *token=[authorization.lowercaseString hasPrefix:@"bearer "]?[authorization substringFromIndex:7]:nil;
+  if(!token.length||!Same(token,[FLEXDylixMCPServer token])){[self respond:connection status:401 headers:@{@"WWW-Authenticate":@"Bearer realm=\"Dylix FLEX MCP\""} body:[@"Unauthorized" dataUsingEncoding:NSUTF8StringEncoding]];return;}
+ }
  id body=[NSJSONSerialization JSONObjectWithData:request[@"body"]?:NSData.data options:0 error:nil];
  if(![body isKindOfClass:NSDictionary.class]){[self respond:connection status:400 headers:@{} body:[@"JSON 解析失败" dataUsingEncoding:NSUTF8StringEncoding]];return;}
  [self mcp:body connection:connection];
