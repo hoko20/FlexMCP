@@ -21,6 +21,7 @@
 #import "FLEXWindowManagerController.h"
 #import "FLEXViewControllersViewController.h"
 #import "FLEXDylixChatViewController.h"
+#import "FLEXDylixRuntime.h"
 #import "NSUserDefaults+FLEX.h"
 
 // x功能模块
@@ -214,6 +215,7 @@ typedef NS_ENUM(NSUInteger, FLEXExplorerMode) {
         }
         
         _selectedView = selectedView;
+        [self syncDylixSelection:selectedView];
         
         [self beginObservingView:selectedView];
 
@@ -244,6 +246,18 @@ typedef NS_ENUM(NSUInteger, FLEXExplorerMode) {
         
         [self updateButtonStates];
     }
+}
+
+- (void)syncDylixSelection:(UIView *)selectedView {
+    FLEXDylixRuntime *runtime = [FLEXDylixRuntime sharedRuntime];
+    runtime.selectedObject = selectedView;
+    if (!selectedView) {
+        return;
+    }
+    NSString *name = NSStringFromClass([selectedView class]);
+    runtime.contextClassName = name;
+    runtime.contextReport = [NSString stringWithFormat:@"App: %@\nCurrent FLEX selection: %@\nUse this runtime evidence to locate the UI owner and implement the requested behavior in the Dylix plugin project. A temporary FLEX view change is not a plugin implementation.",
+        NSBundle.mainBundle.bundleIdentifier ?: @"unknown", name];
 }
 
 - (void)setViewsAtTapPoint:(NSArray<UIView *> *)viewsAtTapPoint {
