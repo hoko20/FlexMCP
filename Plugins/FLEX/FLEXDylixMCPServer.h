@@ -9,7 +9,10 @@
 + (void)setEnabled:(BOOL)enabled;
 + (NSUInteger)port;
 + (void)setPort:(NSUInteger)port;
++ (BOOL)authRequired;
++ (void)setAuthRequired:(BOOL)required;
 + (NSString *)token;
++ (BOOL)setToken:(NSString *)token;
 + (NSString *)rotateToken;
 + (BOOL)sensitiveEnabled;
 + (void)setSensitiveEnabled:(BOOL)enabled;
