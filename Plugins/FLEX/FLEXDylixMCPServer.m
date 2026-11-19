@@ -371,7 +371,7 @@ static NSString *LocalIPv4(void){
  }
  dispatch_async(dispatch_get_main_queue(),^{
   FLEXDylixRuntime *runtime=self.runtime;
-  if(!runtime){runtime=[FLEXDylixRuntime new];self.runtime=runtime;}
+  if(!runtime){runtime=[FLEXDylixRuntime sharedRuntime];self.runtime=runtime;}
   if([operation isEqual:@"gesture"]){
    [runtime performGesture:wire completion:^(NSDictionary *result,NSString *error){
     dispatch_async(self.queue,^{completion(error.length?ToolError(error):FlexContent(result));});
