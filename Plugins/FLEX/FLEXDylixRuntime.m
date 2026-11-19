@@ -39,6 +39,11 @@ static NSDictionary *DXBody(NSData *body) {
 @end
 
 @implementation FLEXDylixRuntime
++ (instancetype)sharedRuntime{
+ static FLEXDylixRuntime *runtime;static dispatch_once_t once;
+ dispatch_once(&once,^{runtime=[FLEXDylixRuntime new];});
+ return runtime;
+}
 - (BOOL)agentCanOpenRow:(NSUInteger)row {
  // Keep credential viewers and arbitrary-address/method entry points manual.
  return row<FLEXGlobalsRowCount && ![@[@(FLEXGlobalsRowAddressInspector),@(FLEXGlobalsRowAppKeychainItems),@(FLEXGlobalsRowCookies),@(FLEXGlobalsRowUserDefaults),@(FLEXGlobalsRowPasteboard),@(FLEXGlobalsRowPushNotifications)] containsObject:@(row)];
